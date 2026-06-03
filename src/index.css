@@ -1,0 +1,18 @@
+:root {
+  --primary: #6a0dad;      /* purple */
+  --secondary: #8a2be2;    /* violet */
+  --accent: #ff69b4;       /* pink */
+  --bg: #f5f5f5;           /* light grey */
+  --card: #fffaf0;         /* cream */
+  --text: #333;
+  --soft: #e6e6fa;         /* lavender */
+}
+
+
+
+body {
+  margin: 0;
+  font-family: 'Inter', Arial, sans-serif;
+  background-color: var(--bg-color, #f4f4f4);
+  color: var(--text-color, #333);
+}
