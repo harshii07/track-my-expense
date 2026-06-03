@@ -80,7 +80,7 @@ function Login() {
 
 async function handleGoogleSuccess(credentialResponse) {
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/google', {
+      const res = await axios.post('https://track-my-expense-7cah.onrender.com/api/auth/google', {
         credential: credentialResponse.credential
       });
       localStorage.setItem('token', res.data.token);
@@ -90,12 +90,10 @@ async function handleGoogleSuccess(credentialResponse) {
         existing.push({ name: res.data.user.name, email: res.data.user.email });
         localStorage.setItem('savedUsers', JSON.stringify(existing));
       }
-      // First time Google user — send to PIN setup
       if (!res.data.user.hasPin) {
         navigate('/google-pin-setup');
         return;
       }
-      // Returning Google user — ask for PIN
       setSelectedUser({ name: res.data.user.name, email: res.data.user.email });
       setEmail(res.data.user.email);
       setStep('google-pin');
@@ -113,7 +111,7 @@ async function handleGoogleSuccess(credentialResponse) {
     }
     try {
       setLoading(true);
-      const res = await axios.post('http://localhost:5000/api/auth/login', {
+      const res = await axios.post('https://track-my-expense-7cah.onrender.com/api/auth/login', {
         email: email.toLowerCase().trim(),
         password
       });

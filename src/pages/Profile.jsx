@@ -17,7 +17,6 @@ function Profile() {
     return name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || "U";
   }
 
-  // Handle Profile Update
   async function handleSave(e) {
     e.preventDefault();
     if (!name.trim()) { setError('Name cannot be empty!'); return; }
@@ -31,7 +30,7 @@ function Profile() {
       setLoading(true);
       const token = localStorage.getItem('token');
       const res = await axios.put(
-        'http://localhost:5000/api/auth/profile',
+        'https://track-my-expense-7cah.onrender.com/api/auth/profile',
         { name, currentPassword, newPassword },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -55,7 +54,6 @@ function Profile() {
     }
   }
 
-  // Handle Account Deletion
   async function handleDeleteAccount() {
     const confirmDelete = window.confirm(
       "⚠️ Are you sure? This will permanently delete your account and all your expense data!"
@@ -65,16 +63,14 @@ function Profile() {
       try {
         setLoading(true);
         const token = localStorage.getItem('token');
-        await axios.delete('http://localhost:5000/api/auth/profile', {
+        await axios.delete('https://track-my-expense-7cah.onrender.com/api/auth/profile', {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        // 1. Remove from "Saved Users" list first
         const saved = JSON.parse(localStorage.getItem('savedUsers') || '[]');
         const updatedSaved = saved.filter(u => u.email !== email);
         localStorage.setItem('savedUsers', JSON.stringify(updatedSaved));
 
-        // 2. Clear Session and Redirect
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         
@@ -179,7 +175,6 @@ function Profile() {
             </button>
           </form>
 
-          {/* Danger Zone */}
           <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '2px dashed #eee' }}>
             <h3 style={{ fontSize: '14px', color: '#E53E3E', marginBottom: '8px' }}>Danger Zone</h3>
             <p style={{ fontSize: '12px', color: '#999', marginBottom: '12px' }}>

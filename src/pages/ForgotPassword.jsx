@@ -26,7 +26,7 @@ function ForgotPassword() {
     setLoading(true);
     setError('');
     try {
-      await axios.post('http://localhost:5000/api/auth/get-question', {
+      await axios.post('https://track-my-expense-7cah.onrender.com/api/auth/get-question', {
         email: email.toLowerCase().trim()
       });
       setStep(2);
@@ -43,7 +43,7 @@ function ForgotPassword() {
     setLoading(true);
     setError('');
     try {
-      await axios.post('http://localhost:5000/api/auth/reset-password', {
+      await axios.post('https://track-my-expense-7cah.onrender.com/api/auth/reset-password', {
         email: email.toLowerCase().trim(),
         answer: answer.toLowerCase().trim(),
         newPassword
