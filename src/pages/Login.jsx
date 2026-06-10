@@ -407,6 +407,5 @@ const userCardStyle = { display: 'flex', alignItems: 'center', gap: '12px', padd
 const avatarStyle = { width: '40px', height: '40px', borderRadius: '50%', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', flexShrink: 0 };
 const dashBtnStyle = { width: '100%', padding: '10px', borderRadius: '12px', border: '2px dashed var(--border-color)', background: 'none', color: '#7F77DD', cursor: 'pointer', fontWeight: '500' };
 const backBtnStyle = { border: 'none', background: 'none', color: 'var(--secondary-text)', cursor: 'pointer', fontSize: '13px', marginTop: '5px' };
-const logoBgStyle = { background: 'linear-gradient(135deg, #7F77DD, #D4537E)', borderRadius: '12px', padding: '12px', display: 'inline-block', fontSize: '28px' };
 
 export default Login;
