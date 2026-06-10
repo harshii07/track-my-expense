@@ -4,6 +4,7 @@ import { setupGooglePin } from '../api';
 
 function GooglePinSetup() {
   const navigate = useNavigate();
+  const [username, setUsername] = useState('');
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [favColor, setFavColor] = useState('');
@@ -16,7 +17,6 @@ function GooglePinSetup() {
     } else {
       document.body.classList.remove('dark');
     }
-    // If no token, redirect to login
     if (!localStorage.getItem('token')) {
       navigate('/login');
     }
@@ -29,6 +29,8 @@ function GooglePinSetup() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
+    if (!username.trim()) return setError('👤 Please enter a username!');
+    if (username.trim().length < 2) return setError('👤 Username must be at least 2 characters!');
     if (pin.length !== 4) return setError('🔢 PIN must be exactly 4 digits!');
     if (pin !== confirmPin) return setError('🔒 PINs do not match!');
     if (!favColor.trim()) return setError('🎨 Security answer is required!');
@@ -36,12 +38,19 @@ function GooglePinSetup() {
 
     try {
       setLoading(true);
-      await setupGooglePin({ pin, securityAnswer: favColor.toLowerCase().trim() });
+      await setupGooglePin({ username: username.trim(), pin, securityAnswer: favColor.toLowerCase().trim() });
 
-      // Update user in localStorage
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       user.hasPin = true;
+      user.name = username.trim();
       localStorage.setItem('user', JSON.stringify(user));
+
+      const existing = JSON.parse(localStorage.getItem('savedUsers') || '[]');
+      const updated = existing.map(u => u.email === user.email ? { ...u, name: username.trim() } : u);
+      if (!updated.find(u => u.email === user.email)) {
+        updated.push({ name: username.trim(), email: user.email });
+      }
+      localStorage.setItem('savedUsers', JSON.stringify(updated));
 
       navigate('/dashboard');
     } catch (err) {
@@ -78,9 +87,9 @@ function GooglePinSetup() {
             marginBottom: '1rem',
             fontSize: '28px'
           }}>🔐</div>
-          <h1 style={{ fontSize: '22px', fontWeight: '600', color: 'var(--text-color, #333)' }}>Set Up Your PIN</h1>
+          <h1 style={{ fontSize: '22px', fontWeight: '600', color: 'var(--text-color, #333)' }}>Set Up Your Account</h1>
           <p style={{ color: 'var(--secondary-text, #777)', fontSize: '14px', marginTop: '4px' }}>
-            Create a PIN to secure your account
+            Choose a username and create a PIN
           </p>
         </div>
 
@@ -100,6 +109,21 @@ function GooglePinSetup() {
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
+          <div>
+            <label style={labelStyle}>Username</label>
+            <input
+              type="text"
+              placeholder="e.g. Harshita"
+              value={username}
+              onChange={e => setUsername(e.target.value)}
+              style={inputStyle}
+              autoFocus
+            />
+            <p style={{ fontSize: '11px', color: 'var(--secondary-text, #888)', marginTop: '4px', marginBottom: 0 }}>
+              This is how you'll appear on the login screen
+            </p>
+          </div>
+
           <div style={{ display: 'flex', gap: '10px' }}>
             <div style={{ flex: 1 }}>
               <label style={labelStyle}>4-Digit PIN</label>
@@ -110,7 +134,6 @@ function GooglePinSetup() {
                 onChange={e => handlePinChange(e.target.value, setPin)}
                 style={{ ...inputStyle, textAlign: 'center', letterSpacing: '6px' }}
                 maxLength={4}
-                autoFocus
               />
             </div>
             <div style={{ flex: 1 }}>

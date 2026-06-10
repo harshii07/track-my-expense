@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Login from './pages/Login';
-import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import ForgotPassword from './pages/ForgotPassword';
@@ -22,7 +21,6 @@ function ExpensePage() {
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-  
   const budgetKey = user.id ? `monthBudgets_${user.id}` : 'monthBudgets';
 
   const [monthBudgets, setMonthBudgets] = useState(() => {
@@ -102,7 +100,6 @@ function ExpensePage() {
   function handleBudgetChange(val) {
     const updated = { ...monthBudgets, [currentMonthKey]: parseFloat(val) || 0 };
     setMonthBudgets(updated);
-    // ✅ Save under per-user key
     localStorage.setItem(budgetKey, JSON.stringify(updated));
   }
 
@@ -147,7 +144,6 @@ function ExpensePage() {
           <p style={{ fontSize: '13px', opacity: 0.85 }}>Welcome, {user.name}!</p>
         </div>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-          
           <button className="dark-toggle" onClick={() => navigate('/profile')}>👤 Profile</button>
           <button
             className="dark-toggle"
@@ -226,7 +222,7 @@ function ExpensePage() {
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <label style={{ fontSize: '13px', color: '#666' }}>
-                 Set Budget for {monthNames[viewMonth]}:
+                  Set Budget for {monthNames[viewMonth]}:
                 </label>
                 <input
                   type="number"
@@ -285,7 +281,7 @@ function ExpensePage() {
               </div>
             </div>
 
-           {budget === 0 && (
+            {budget === 0 && (
               <div style={{ background: '#f8f8ff', border: '1px dashed #7F77DD', borderRadius: '12px', padding: '12px 16px', marginBottom: '16px', fontSize: '13px', color: '#7F77DD', textAlign: 'center' }}>
                 💡 Please set a budget for {monthNames[viewMonth]} before adding expenses.
               </div>
@@ -298,8 +294,6 @@ function ExpensePage() {
                 setEditingExpense={setEditingExpense}
               />
             )}
-
-            
 
             <ExpenseList
               expenses={filteredExpenses}
@@ -334,14 +328,13 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
         <Route path="/expenses" element={<PrivateRoute><ExpensePage /></PrivateRoute>} />
         <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+        <Route path="/google-pin-setup" element={<PrivateRoute><GooglePinSetup /></PrivateRoute>} />
+        <Route path="/" element={<Welcome />} />
         <Route path="*" element={<Navigate to="/" />} />
-		<Route path="/google-pin-setup" element={<PrivateRoute><GooglePinSetup /></PrivateRoute>} />
-		<Route path="/" element={<Welcome />} />
       </Routes>
     </BrowserRouter>
   );

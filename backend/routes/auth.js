@@ -8,70 +8,6 @@ const authMiddleware = require('../middleware/auth');
 const { OAuth2Client } = require('google-auth-library');
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// --- REGISTER ---
-router.post('/register', async (req, res) => {
-  try {
-    const { name, email, password, securityQuestion, securityAnswer } = req.body;
-
-    if (!name || !email || !password || !securityAnswer) {
-      return res.status(400).json({ message: 'All fields are required!' });
-    }
-
-    const lowerEmail = email.toLowerCase().trim();
-    const existingUser = await User.findOne({ email: lowerEmail });
-    if (existingUser) {
-      return res.status(400).json({ message: 'Email already registered!' });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = new User({
-      name,
-      email: lowerEmail,
-      password: hashedPassword,
-      securityQuestion: securityQuestion || 'What is your favorite color?',
-      securityAnswer: securityAnswer.toLowerCase().trim()
-    });
-
-    await user.save();
-
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secret123', { expiresIn: '7d' });
-
-    res.status(201).json({
-      token,
-      user: { id: user._id, name: user.name, email: user.email }
-    });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-// --- LOGIN ---
-router.post('/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
-
-    if (!user) {
-      return res.status(400).json({ message: 'Invalid email or password!' });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid email or password!' });
-    }
-
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secret123', { expiresIn: '7d' });
-
-    res.json({
-      token,
-      user: { id: user._id, name: user.name, email: user.email }
-    });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
 // --- GOOGLE LOGIN ---
 router.post('/google', async (req, res) => {
   try {
@@ -122,20 +58,22 @@ router.post('/google', async (req, res) => {
 // --- GOOGLE USER SET PIN ---
 router.post('/google-setup-pin', authMiddleware, async (req, res) => {
   try {
-    const { pin, securityAnswer } = req.body;
+    const { username, pin, securityAnswer } = req.body;
+    if (!username || username.trim().length < 2) return res.status(400).json({ message: 'Username must be at least 2 characters!' });
     if (!pin || pin.length !== 4) return res.status(400).json({ message: 'PIN must be 4 digits!' });
     if (!securityAnswer) return res.status(400).json({ message: 'Security answer is required!' });
 
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found!' });
 
+    user.name = username.trim();
     user.password = await bcrypt.hash(pin, 10);
     user.securityQuestion = 'What is your favorite color?';
     user.securityAnswer = securityAnswer.toLowerCase().trim();
     user.hasPin = true;
     await user.save();
 
-    res.json({ message: 'PIN set successfully!' });
+    res.json({ message: 'Account set up successfully!' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
