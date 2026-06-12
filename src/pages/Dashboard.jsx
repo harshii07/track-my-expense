@@ -2,15 +2,61 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getExpenses } from '../api';
 import logo from '../logo.png';
+import Tour from '../components/Tour';
+
+const dashboardSteps = [
+  {
+    selector: null,
+    emoji: '👋',
+    title: 'Welcome to Track My Expense!',
+    description: 'Let us give you a quick tour of the app. You can skip anytime!'
+  },
+  {
+    selector: '[data-tour="budget-card"]',
+    emoji: '💰',
+    title: 'Your Monthly Budget',
+    description: 'This shows your budget for the current month. Head to expenses to set it!'
+  },
+  {
+    selector: '[data-tour="spent-card"]',
+    emoji: '📊',
+    title: 'Amount Spent',
+    description: 'Track how much you have spent this month across all categories.'
+  },
+  {
+    selector: '[data-tour="remaining-card"]',
+    emoji: '🏦',
+    title: 'Remaining Balance',
+    description: 'See how much budget you have left — or if you have overspent!'
+  },
+  {
+    selector: '[data-tour="budget-bar"]',
+    emoji: '📈',
+    title: 'Budget Progress Bar',
+    description: 'Visual indicator of your spending. Green is good, amber is a warning, red means overspent!'
+  },
+  {
+    selector: '[data-tour="expenses-btn"]',
+    emoji: '➕',
+    title: 'View & Add Expenses',
+    description: 'Click here to add expenses, set your budget and see your spending history.'
+  },
+  {
+    selector: '[data-tour="profile-btn"]',
+    emoji: '👤',
+    title: 'Your Profile',
+    description: 'Edit your username, change your PIN or delete your account here.'
+  }
+];
 
 function Dashboard() {
   const navigate = useNavigate();
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showTour, setShowTour] = useState(false);
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-  // ✅ Per-user budget key
   const budgetKey = user.id ? `monthBudgets_${user.id}` : 'monthBudgets';
   const monthBudgets = JSON.parse(localStorage.getItem(budgetKey) || '{}');
 
@@ -30,6 +76,12 @@ function Dashboard() {
       fetchData();
     }
   }, [navigate]);
+
+  useEffect(() => {
+    if (!loading && !localStorage.getItem('tourDone')) {
+      setTimeout(() => setShowTour(true), 500);
+    }
+  }, [loading]);
 
   async function fetchData() {
     try {
@@ -75,6 +127,9 @@ function Dashboard() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-color, #f8f9fa)', fontFamily: 'sans-serif' }}>
+
+      {showTour && <Tour steps={dashboardSteps} onFinish={() => setShowTour(false)} />}
+
       <div style={{ background: 'linear-gradient(135deg, #7F77DD, #D4537E)', padding: '1rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ color: 'white', display: 'flex', alignItems: 'center', gap: '12px' }}>
           <img src={logo} alt="logo" style={{ width: '42px', height: '42px', borderRadius: '10px' }} />
@@ -93,7 +148,7 @@ function Dashboard() {
           <>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '2rem' }}>
 
-              <div style={cardStyle}>
+              <div data-tour="budget-card" style={cardStyle}>
                 <span style={labelStyle}>BUDGET — {currentMonthName.toUpperCase()}</span>
                 <h2 style={{ margin: '10px 0', color: '#7F77DD' }}>
                   {currentBudget > 0 ? '₹' + currentBudget.toLocaleString('en-IN') : 'Not set'}
@@ -105,7 +160,7 @@ function Dashboard() {
                 )}
               </div>
 
-              <div style={cardStyle}>
+              <div data-tour="spent-card" style={cardStyle}>
                 <span style={labelStyle}>SPENT THIS MONTH</span>
                 <h2 style={{ margin: '10px 0', color: '#D4537E' }}>
                   ₹{monthlySpent.toLocaleString('en-IN')}
@@ -115,7 +170,7 @@ function Dashboard() {
                 </p>
               </div>
 
-              <div style={cardStyle}>
+              <div data-tour="remaining-card" style={cardStyle}>
                 <span style={labelStyle}>
                   {isOverspent ? 'OVERSPENT 🚨' : '💰 REMAINING'}
                 </span>
@@ -139,7 +194,7 @@ function Dashboard() {
             </div>
 
             {currentBudget > 0 && (
-              <div style={{ background: isOverspent ? '#FCEBEB' : '#EAF3DE', border: `1px solid ${isOverspent ? '#F09595' : '#97C459'}`, borderRadius: '16px', padding: '1.5rem', marginBottom: '2rem' }}>
+              <div data-tour="budget-bar" style={{ background: isOverspent ? '#FCEBEB' : '#EAF3DE', border: `1px solid ${isOverspent ? '#F09595' : '#97C459'}`, borderRadius: '16px', padding: '1.5rem', marginBottom: '2rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: isOverspent ? '#501313' : '#3B6D11', marginBottom: '8px', fontWeight: '500' }}>
                   <span>{isOverspent ? '🚨 Over budget!' : '📊 Budget usage'}</span>
                   <span>{percentage}%</span>
@@ -166,8 +221,8 @@ function Dashboard() {
             <div style={{ background: 'var(--card-bg, white)', padding: '2rem', borderRadius: '16px', textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
               <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-color, #333)' }}>What would you like to do?</h3>
               <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', flexWrap: 'wrap' }}>
-                <button onClick={() => navigate('/expenses')} style={actionBtnStyle('#7F77DD')}>📊 View Expenses</button>
-                <button onClick={() => navigate('/profile')} style={actionBtnStyle('#D4537E')}>👤 My Profile</button>
+                <button data-tour="expenses-btn" onClick={() => navigate('/expenses')} style={actionBtnStyle('#7F77DD')}>📊 View Expenses</button>
+                <button data-tour="profile-btn" onClick={() => navigate('/profile')} style={actionBtnStyle('#D4537E')}>👤 My Profile</button>
               </div>
             </div>
           </>

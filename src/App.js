@@ -10,14 +10,61 @@ import ExpenseList from './components/ExpenseList';
 import SummaryChart from './components/SummaryChart';
 import BudgetBar from './components/BudgetBar';
 import GooglePinSetup from './pages/GooglePinSetup';
+import Tour from './components/Tour';
 import { getExpenses, addExpense, updateExpense, deleteExpense } from './api';
 import './App.css';
+
+const expenseSteps = [
+  {
+    selector: null,
+    emoji: '📊',
+    title: 'Your Expense Page',
+    description: 'This is where you track all your spending. Let us show you around!'
+  },
+  {
+    selector: '[data-tour="month-switcher"]',
+    emoji: '📅',
+    title: 'Month Switcher',
+    description: 'Navigate between months to view your past or current expenses.'
+  },
+  {
+    selector: '[data-tour="budget-input"]',
+    emoji: '💰',
+    title: 'Set Your Budget',
+    description: 'Enter a budget for the selected month. The progress bar will track your spending against it.'
+  },
+  {
+    selector: '[data-tour="budget-bar"]',
+    emoji: '📈',
+    title: 'Budget Progress Bar',
+    description: 'Green means you are on track, amber means 80% used, red means overspent!'
+  },
+  {
+    selector: '[data-tour="expense-form"]',
+    emoji: '➕',
+    title: 'Add an Expense',
+    description: 'Use this form to add a new expense. Pick a category, enter the name, amount and date.'
+  },
+  {
+    selector: '[data-tour="expense-list"]',
+    emoji: '📋',
+    title: 'Your Expense List',
+    description: 'All your expenses appear here. You can search, filter, sort and delete them.'
+  },
+  {
+    selector: '[data-tour="summary-chart"]',
+    emoji: '🥧',
+    title: 'Summary & Charts',
+    description: 'See a breakdown of your spending by category and a monthly history chart.'
+  }
+];
 
 function ExpensePage() {
   const navigate = useNavigate();
   const [expenses, setExpenses] = useState([]);
   const [editingExpense, setEditingExpense] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showTour, setShowTour] = useState(false);
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
@@ -35,6 +82,12 @@ function ExpensePage() {
   const budget = monthBudgets[currentMonthKey] || 0;
 
   useEffect(() => { fetchExpenses(); }, []);
+
+  useEffect(() => {
+    if (!loading && !localStorage.getItem('tourDone')) {
+      setTimeout(() => setShowTour(true), 500);
+    }
+  }, [loading]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -138,6 +191,8 @@ function ExpensePage() {
 
   return (
     <div className="app">
+      {showTour && <Tour steps={expenseSteps} onFinish={() => setShowTour(false)} />}
+
       <div className="header">
         <div>
           <h1>Track My Expense</h1>
@@ -160,7 +215,7 @@ function ExpensePage() {
           <p style={{ textAlign: 'center', padding: '2rem', color: '#888' }}>Loading...</p>
         ) : (
           <>
-            <div style={{
+            <div data-tour="month-switcher" style={{
               background: 'white',
               borderRadius: '12px',
               padding: '16px 20px',
@@ -220,7 +275,7 @@ function ExpensePage() {
                 </button>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div data-tour="budget-input" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <label style={{ fontSize: '13px', color: '#666' }}>
                   Set Budget for {monthNames[viewMonth]}:
                 </label>
@@ -236,7 +291,9 @@ function ExpensePage() {
               </div>
             </div>
 
-            <BudgetBar budget={budget} totalSpent={totalSpent} isOverspent={isOverspent} remaining={remaining} isCurrentMonth={isCurrentMonth} monthName={monthNames[viewMonth]} />
+            <div data-tour="budget-bar">
+              <BudgetBar budget={budget} totalSpent={totalSpent} isOverspent={isOverspent} remaining={remaining} isCurrentMonth={isCurrentMonth} monthName={monthNames[viewMonth]} />
+            </div>
 
             <div style={{
               display: 'grid',
@@ -287,30 +344,36 @@ function ExpensePage() {
               </div>
             )}
 
-            {budget > 0 && (
-              <ExpenseForm
-                onAdd={handleAdd}
-                editingExpense={editingExpense}
-                setEditingExpense={setEditingExpense}
+            <div data-tour="expense-form">
+              {budget > 0 && (
+                <ExpenseForm
+                  onAdd={handleAdd}
+                  editingExpense={editingExpense}
+                  setEditingExpense={setEditingExpense}
+                />
+              )}
+            </div>
+
+            <div data-tour="expense-list">
+              <ExpenseList
+                expenses={filteredExpenses}
+                onDelete={handleDelete}
+                onEdit={setEditingExpense}
               />
-            )}
+            </div>
 
-            <ExpenseList
-              expenses={filteredExpenses}
-              onDelete={handleDelete}
-              onEdit={setEditingExpense}
-            />
-
-            <SummaryChart
-              expenses={filteredExpenses}
-              allExpenses={expenses}
-              budget={budget}
-              totalSpent={totalSpent}
-              isOverspent={isOverspent}
-              remaining={remaining}
-              isCurrentMonth={isCurrentMonth}
-              monthName={monthNames[viewMonth]}
-            />
+            <div data-tour="summary-chart">
+              <SummaryChart
+                expenses={filteredExpenses}
+                allExpenses={expenses}
+                budget={budget}
+                totalSpent={totalSpent}
+                isOverspent={isOverspent}
+                remaining={remaining}
+                isCurrentMonth={isCurrentMonth}
+                monthName={monthNames[viewMonth]}
+              />
+            </div>
           </>
         )}
       </main>
