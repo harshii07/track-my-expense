@@ -4,9 +4,10 @@ function Tour({ steps, onFinish }) {
   const [current, setCurrent] = useState(0);
   const [box, setBox] = useState(null);
 
-  useEffect(() => {
+useEffect(() => {
     highlight(steps[current].selector);
     return () => clearHighlight();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current]);
 
   function highlight(selector) {
